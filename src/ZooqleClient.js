@@ -6,8 +6,6 @@ const BASE_URL = 'https://zooqle.com'
 
 
 class ZooqleClient {
-  _cookies = {}
-
   constructor({ userName, password, userAgent } = {}) {
     if (!userName || !password) {
       throw new Error('Username and password are required')
@@ -108,6 +106,10 @@ class ZooqleClient {
   }
 
   async getTorrents(imdbId) {
+    if (!this._cookies) {
+      await this._authenticate()
+    }
+
     let url = await this._getItemUrl(imdbId)
 
     if (!url) {
@@ -116,6 +118,8 @@ class ZooqleClient {
 
     let res = await this._request(url)
 
+    // In case the session has been terminated for whatever reason
+    // (like cookie expiration)
     if (!this._getAuthStatusFromResponse(res)) {
       await this._authenticate()
       res = await this._request(url)

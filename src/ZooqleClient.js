@@ -30,11 +30,17 @@ class ZooqleClient {
         category = newCategory || category
       } else {
         let magnetLink = $cells.find('a[href^="magnet"]').attr('href')
+
+        let $audioSpans = $cells.eq(1).find('div > span')
+        let audio = $audioSpans.eq(0).text()
+        let languages = $audioSpans.eq(1).text().toUpperCase()
+        languages = languages ? languages.split(',') : undefined
+
         let users = $cells.find('.progress').last().attr('title')
         let seedersMatch = users && users.match(/seeders:\s*([0-9,]+)/i)
         let seeders = seedersMatch && Number(seedersMatch[1].replace(',', ''))
 
-        results.push({ category, magnetLink, seeders })
+        results.push({ category, magnetLink, seeders, audio, languages })
       }
 
       return results

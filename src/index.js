@@ -58,6 +58,12 @@ let client = new ZooqleClient({
   userAgent: USER_AGENT,
 })
 
+function makeDetailsString(prefix, ...args) {
+  let string = args
+    .filter((arg, i) => arg && args.indexOf(arg) === i)
+    .join(' ')
+  return string ? `${prefix} ${string}` : undefined
+}
 
 async function findStreams(req) {
   let imdbId = req.query && req.query.imdb_id
@@ -70,8 +76,10 @@ async function findStreams(req) {
   let streamsByCategory = {}
 
   return torrents
-    .filter(({ category, seeders }) => {
-      if (seeders < MIN_SEEDERS) {
+    .filter(({ category, seeders = 0, languages = [] }) => {
+      if (seeders < MIN_SEEDERS || (
+        languages.length && !languages.includes('EN')
+      )) {
         return false
       }
 
@@ -79,29 +87,32 @@ async function findStreams(req) {
       streamsByCategory[category]++
       return streamsByCategory[category] <= STREAMS_PER_CATEGORY
     })
-    .map(({ magnetLink, category }) => {
+    .map(({ magnetLink, category, seeders, audio, languages = [] }) => {
       let { infoHash, name } = magnet.decode(magnetLink)
-      let { resolution, quality, group } = parseTorrentName(name)
-      let prefix
+      let { resolution, quality } = parseTorrentName(name)
+      let videoDetails = makeDetailsString('📺', category, resolution, quality)
+      let audioDetails = makeDetailsString('🔉', audio, ...languages)
+      let seedersDetails = makeDetailsString('👤', seeders)
+      let availability = 1
 
-      if (category === '3D') {
-        prefix = '3D'
-      } else if (!resolution) {
-        resolution = category
+      if (seeders >= 50) {
+        availability = 3
+      } else if (seeders >= 20) {
+        availability = 2
       }
 
-      let title = [prefix, resolution, quality, group]
+      let title = [videoDetails, audioDetails, seedersDetails]
         .filter((val) => val)
-        .join(' - ')
+        .join(', ')
 
-      return {
+      let result = {
         name: 'Zooqle',
-        isFree: true,
-        availability: 2,
-        tag: [resolution],
+        tag: resolution ? [resolution] : undefined,
+        availability,
         title,
         infoHash,
       }
+      return result
     })
 }
 

@@ -45,8 +45,8 @@ const MANIFEST = {
   email: EMAIL,
   contactEmail: EMAIL,
   endpoint: ENDPOINT,
-  logo: `${ENDPOINT}/logo.png`,
-  icon: `${ENDPOINT}/logo.png`,
+  logo: `${ENDPOINT}/logo-white.png`,
+  icon: `${ENDPOINT}/logo-white.png`,
   background: `${ENDPOINT}/bg.jpg`,
 }
 

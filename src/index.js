@@ -34,7 +34,6 @@ if (IS_PROD && ID === DEFAULT_ID) {
   process.exit(1)
 }
 
-
 const MANIFEST = {
   name: 'Zooqle',
   id: ID,
@@ -52,12 +51,6 @@ const MANIFEST = {
 }
 
 
-let client = new ZooqleClient({
-  userName: USERNAME,
-  password: PASSWORD,
-  userAgent: USER_AGENT,
-})
-
 function makeDetailsString(prefix, ...args) {
   let string = args
     .filter((arg, i) => arg && args.indexOf(arg) === i)
@@ -65,7 +58,45 @@ function makeDetailsString(prefix, ...args) {
   return string ? `${prefix} ${string}` : undefined
 }
 
-async function findStreams(req) {
+function isEligibleTorrent(torrent, torrentsByCategory) {
+  let { category, seeders = 0, languages = [] } = torrent
+
+  if (seeders < MIN_SEEDERS || (
+    languages.length && !languages.includes('EN')
+  )) {
+    return false
+  }
+
+  torrentsByCategory[category] = torrentsByCategory[category] || 0
+  torrentsByCategory[category]++
+  return torrentsByCategory[category] <= STREAMS_PER_CATEGORY
+}
+
+function torrentToStream(torrent) {
+  let { magnetLink, category, seeders, audio, languages = [] } = torrent
+  let { infoHash, name } = magnet.decode(magnetLink)
+  let { resolution, quality } = parseTorrentName(name)
+  let videoDetails = makeDetailsString('📺', category, resolution, quality)
+  let audioDetails = makeDetailsString('🔉', audio, ...languages)
+  let seedersDetails = makeDetailsString('👤', seeders)
+  let tag = resolution ? [resolution] : undefined
+  let title = [videoDetails, audioDetails, seedersDetails]
+    .filter((v) => v)
+    .join(', ')
+  let availability
+
+  if (seeders >= 50) {
+    availability = 3
+  } else if (seeders >= 20) {
+    availability = 2
+  } else {
+    availability = 1
+  }
+
+  return { tag, availability, title, infoHash }
+}
+
+async function findStreams(client, req) {
   let imdbId = req.query && req.query.imdb_id
 
   if (!imdbId) {
@@ -73,53 +104,21 @@ async function findStreams(req) {
   }
 
   let torrents = await client.getTorrents(imdbId)
-  let streamsByCategory = {}
+  let torrentsByCategory = {}
 
   return torrents
-    .filter(({ category, seeders = 0, languages = [] }) => {
-      if (seeders < MIN_SEEDERS || (
-        languages.length && !languages.includes('EN')
-      )) {
-        return false
-      }
-
-      streamsByCategory[category] = streamsByCategory[category] || 0
-      streamsByCategory[category]++
-      return streamsByCategory[category] <= STREAMS_PER_CATEGORY
-    })
-    .map(({ magnetLink, category, seeders, audio, languages = [] }) => {
-      let { infoHash, name } = magnet.decode(magnetLink)
-      let { resolution, quality } = parseTorrentName(name)
-      let videoDetails = makeDetailsString('📺', category, resolution, quality)
-      let audioDetails = makeDetailsString('🔉', audio, ...languages)
-      let seedersDetails = makeDetailsString('👤', seeders)
-      let availability = 1
-
-      if (seeders >= 50) {
-        availability = 3
-      } else if (seeders >= 20) {
-        availability = 2
-      }
-
-      let title = [videoDetails, audioDetails, seedersDetails]
-        .filter((val) => val)
-        .join(', ')
-
-      let result = {
-        name: 'Zooqle',
-        tag: resolution ? [resolution] : undefined,
-        availability,
-        title,
-        infoHash,
-      }
-      return result
-    })
+    .filter((torrent) => isEligibleTorrent(torrent, torrentsByCategory))
+    .map(torrentToStream)
 }
 
-
+let client = new ZooqleClient({
+  userName: USERNAME,
+  password: PASSWORD,
+  userAgent: USER_AGENT,
+})
 let methods = {
   'stream.find': (req, cb) => {
-    findStreams(req).then(
+    findStreams(client, req).then(
       (res) => cb(null, res),
       (err) => {
         /* eslint-disable no-console */
@@ -148,16 +147,18 @@ server
       id: ID === DEFAULT_ID ? chalk.red(ID) : chalk.green(ID),
       email: EMAIL ? chalk.green(EMAIL) : chalk.red('undefined'),
       env: IS_PROD ? chalk.green('production') : chalk.green('development'),
+      userName: chalk.green(USERNAME),
     }
 
     // eslint-disable-next-line no-console
     console.log(`
-    Zooqle Addon is live
+    ${MANIFEST.name} Addon is live
 
     Endpoint:    ${values.endpoint}
     Addon Id:    ${values.id}
     Email:       ${values.email}
     Environment: ${values.env}
+    Username:    ${values.userName}
     `)
   })
   .listen(PORT)

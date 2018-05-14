@@ -111,7 +111,7 @@ class ZooqleClient {
     let url = await this._getItemUrl(imdbId)
 
     if (!url) {
-      return
+      return []
     }
 
     let res = await this._request(url)
@@ -121,7 +121,7 @@ class ZooqleClient {
       res = await this._request(url)
     }
 
-    return this._extractTorrentsFromMoviePage(res.body)
+    return this._extractTorrentsFromMoviePage(res.body) || []
   }
 }
 

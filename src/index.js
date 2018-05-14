@@ -12,7 +12,7 @@ const STATIC_DIR = 'static'
 const USER_AGENT = 'stremio-zooqle'
 const DEFAULT_ID = 'stremio_zooqle'
 const ID_PROPERTY = 'imdb_id'
-const MIN_SEEDERS = 7
+const MIN_SEEDERS = 0
 const STREAMS_PER_CATEGORY = 2
 
 const ID = process.env.STREMIO_ZOOQLE_ID || DEFAULT_ID
@@ -83,13 +83,13 @@ function torrentToStream(torrent) {
   let title = [videoDetails, audioDetails, seedersDetails]
     .filter((v) => v)
     .join(', ')
-  let availability
+  let availability = 0
 
   if (seeders >= 50) {
     availability = 3
   } else if (seeders >= 20) {
     availability = 2
-  } else {
+  } else if (seeders) {
     availability = 1
   }
 

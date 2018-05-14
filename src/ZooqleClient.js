@@ -16,7 +16,7 @@ class ZooqleClient {
     this.userAgent = userAgent
   }
 
-  _extractTorrentsFromMoviePage(body) {
+  _extractTorrentsFromPage(body) {
     let $ = cheerio.load(body)
     let category
 
@@ -43,6 +43,11 @@ class ZooqleClient {
 
       return results
     }, [])
+  }
+
+  _getShowIdFromPage(body) {
+    let match = body.match(/data-href="[^"]+show=(\d+)/)
+    return match && match[1]
   }
 
   _getAuthStatusFromResponse(res) {
@@ -105,7 +110,7 @@ class ZooqleClient {
     return `${BASE_URL}${res.headers.location}`
   }
 
-  async getTorrents(imdbId) {
+  async getMovieTorrents(imdbId) {
     if (!this._cookies) {
       await this._authenticate()
     }
@@ -125,7 +130,28 @@ class ZooqleClient {
       res = await this._request(url)
     }
 
-    return this._extractTorrentsFromMoviePage(res.body) || []
+    return this._extractTorrentsFromPage(res.body) || []
+  }
+
+  async getShowTorrents(imdbId, season, episode) {
+    let itemUrl = await this._getItemUrl(imdbId)
+
+    if (!itemUrl) {
+      return []
+    }
+
+    let itemRes = await this._request(itemUrl)
+    let showId = this._getShowIdFromPage(itemRes.body)
+
+    if (!showId) {
+      return []
+    }
+
+    let torrentsUrl = `${BASE_URL}/misc/tveps.php` +
+      `?show=${showId}&se=${season}&ep=${episode}`
+    let torrentsRes = await this._request(torrentsUrl)
+
+    return this._extractTorrentsFromPage(torrentsRes.body) || []
   }
 }
 

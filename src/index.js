@@ -103,8 +103,15 @@ async function findStreams(client, req) {
     return
   }
 
-  let torrents = await client.getTorrents(imdbId)
+  let { type, season, episode } = req.query
   let torrentsByCategory = {}
+  let torrents
+
+  if (type === 'movie') {
+    torrents = await client.getMovieTorrents(imdbId)
+  } else {
+    torrents = await client.getShowTorrents(imdbId, season, episode)
+  }
 
   return torrents
     .filter((torrent) => isEligibleTorrent(torrent, torrentsByCategory))

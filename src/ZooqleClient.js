@@ -18,21 +18,26 @@ class ZooqleClient {
 
   _extractTorrentsFromPage(body) {
     let $ = cheerio.load(body)
-    let category
+    let currentCategory = 'Std'
 
     return $('.table-torrents tr').toArray().reduce((results, row, i) => {
       let $cells = $(row).find('td')
 
       if (i === 0 || $cells.length === 1) {
+        // Sometimes a category is specified as a header on a separate row...
         let newCategory = $cells.eq(0).find('a ~ span').prev().text().trim()
-        category = newCategory || category
+        currentCategory = newCategory || currentCategory
       } else {
         let magnetLink = $cells.find('a[href^="magnet"]').attr('href')
 
-        let $audioSpans = $cells.eq(1).find('div > span')
-        let audio = $audioSpans.eq(0).text()
+        let $audioSpans = $cells.eq(1).find('div > span:not(.smallest)')
+        let audio = $audioSpans.eq(0).text() || undefined
         let languages = $audioSpans.eq(1).text().toUpperCase()
-        languages = languages ? languages.split(',') : undefined
+        languages = languages ? languages.split(',') : []
+
+        // ...and sometimes as a small icon along the audio specs
+        let $category = $cells.eq(1).find('.zqf-mi-width, .zqf-mi-3d').parent()
+        let category = $category.text().trim() || currentCategory
 
         let users = $cells.find('.progress').last().attr('title')
         let seedersMatch = users && users.match(/seeders:\s*([0-9,]+)/i)

@@ -26,6 +26,16 @@ const PASSWORD = process.env.STREMIO_ZOOQLE_PASSWORD
 const IS_PROD = process.env.NODE_ENV === 'production'
 
 
+if (!USERNAME || !PASSWORD) {
+  // eslint-disable-next-line no-console
+  console.error(
+    chalk.red(
+      '\nZooqle username and password must be speicified\n'
+    )
+  )
+  process.exit(1)
+}
+
 if (IS_PROD && ID === DEFAULT_ID) {
   // eslint-disable-next-line no-console
   console.error(
@@ -35,6 +45,7 @@ if (IS_PROD && ID === DEFAULT_ID) {
   )
   process.exit(1)
 }
+
 
 const MANIFEST = {
   name: 'Zooqle',

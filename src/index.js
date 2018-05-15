@@ -18,6 +18,7 @@ const STREAMS_PER_CATEGORY = 2
 const ID = process.env.STREMIO_ZOOQLE_ID || DEFAULT_ID
 const ENDPOINT = process.env.STREMIO_ZOOQLE_ENDPOINT || 'http://localhost'
 const PORT = process.env.STREMIO_ZOOQLE_PORT || '80'
+const CACHE = process.env.STREMIO_ZOOQLE_CACHE || '1'
 const EMAIL = process.env.STREMIO_ZOOQLE_EMAIL
 const USERNAME = process.env.STREMIO_ZOOQLE_USERNAME
 const PASSWORD = process.env.STREMIO_ZOOQLE_PASSWORD
@@ -122,6 +123,7 @@ let client = new ZooqleClient({
   userName: USERNAME,
   password: PASSWORD,
   userAgent: USER_AGENT,
+  cache: CACHE,
 })
 let methods = {
   'stream.find': (req, cb) => {
@@ -154,6 +156,9 @@ server
       id: ID === DEFAULT_ID ? chalk.red(ID) : chalk.green(ID),
       email: EMAIL ? chalk.green(EMAIL) : chalk.red('undefined'),
       env: IS_PROD ? chalk.green('production') : chalk.green('development'),
+      cache: (CACHE === '0') ?
+        chalk.red('off') :
+        chalk.green(CACHE === '1' ? 'on' : CACHE),
       userName: chalk.green(USERNAME),
     }
 
@@ -165,6 +170,7 @@ server
     Addon Id:    ${values.id}
     Email:       ${values.email}
     Environment: ${values.env}
+    Cache:       ${values.cache}
     Username:    ${values.userName}
     `)
   })

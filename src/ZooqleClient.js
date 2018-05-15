@@ -1,19 +1,37 @@
 import needle from 'needle'
 import cheerio from 'cheerio'
+import cacheManager from 'cache-manager'
+import redisStore from 'cache-manager-redis-store'
 
 
 const BASE_URL = 'https://zooqle.com'
+const CACHE_TTLS = {
+  // Item URLs aren't supposed to change, so we cache them for long
+  getItemUrl: 7 * 24 * 60 * 60, // a week
+  getMovieTorrents: 4 * 60 * 60, // 4 hours
+  getShowTorrents: 4 * 60 * 60, // 4 hours
+  NO_RESULTS: 10 * 60, // 10 minutes
+}
 
 
 class ZooqleClient {
-  constructor({ userName, password, userAgent } = {}) {
+  constructor({ userName, password, userAgent, cache } = {}) {
     if (!userName || !password) {
       throw new Error('Username and password are required')
     }
 
-    this.userName = userName
-    this.password = password
-    this.userAgent = userAgent
+    this._userName = userName
+    this._password = password
+    this._userAgent = userAgent
+
+    if (cache === '1') {
+      this.cache = cacheManager.caching({ store: 'memory' })
+    } else if (cache && cache !== '0') {
+      this.cache = cacheManager.caching({
+        store: redisStore,
+        url: cache,
+      })
+    }
   }
 
   _extractTorrentsFromPage(body) {
@@ -62,7 +80,7 @@ class ZooqleClient {
   async _request(url, method = 'get', headers = {}, data = null) {
     let options = {
       headers: {
-        'user-agent': this.userAgent,
+        'user-agent': this._userAgent,
         ...headers,
       },
       cookies: this._cookies,
@@ -87,8 +105,8 @@ class ZooqleClient {
     let data = {
       action: 'login',
       remember: 1,
-      user: this.userName,
-      password: this.password,
+      user: this._userName,
+      password: this._password,
     }
     let headers = {
       'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -115,12 +133,12 @@ class ZooqleClient {
     return `${BASE_URL}${res.headers.location}`
   }
 
-  async getMovieTorrents(imdbId) {
+  async _getMovieTorrents(imdbId) {
     if (!this._cookies) {
       await this._authenticate()
     }
 
-    let url = await this._getItemUrl(imdbId)
+    let url = await this.getItemUrl(imdbId)
 
     if (!url) {
       return []
@@ -138,8 +156,8 @@ class ZooqleClient {
     return this._extractTorrentsFromPage(res.body) || []
   }
 
-  async getShowTorrents(imdbId, season, episode) {
-    let itemUrl = await this._getItemUrl(imdbId)
+  async _getShowTorrents(imdbId, season, episode) {
+    let itemUrl = await this.getItemUrl(imdbId)
 
     if (!itemUrl) {
       return []
@@ -157,6 +175,49 @@ class ZooqleClient {
     let torrentsRes = await this._request(torrentsUrl)
 
     return this._extractTorrentsFromPage(torrentsRes.body) || []
+  }
+
+  async getItemUrl(imdbId) {
+    if (!this.cache) {
+      return this._getItemUrl(imdbId)
+    }
+
+    let cacheKey = `itemUrl:${imdbId}`
+    let cacheOptions = {
+      ttl: CACHE_TTLS.getItemUrl,
+    }
+    let method = this._getItemUrl.bind(this, imdbId)
+    return this.cache.wrap(cacheKey, method, cacheOptions)
+  }
+
+  async getMovieTorrents(imdbId) {
+    if (!this.cache) {
+      return this._getMovieTorrents(imdbId)
+    }
+
+    let cacheKey = `movie:${imdbId}`
+    let cacheOptions = {
+      ttl: (res) => {
+        return res.length ? CACHE_TTLS.getMovieTorrents : CACHE_TTLS.NO_RESULTS
+      },
+    }
+    let method = this._getMovieTorrents.bind(this, imdbId)
+    return this.cache.wrap(cacheKey, method, cacheOptions)
+  }
+
+  async getShowTorrents(imdbId, season, episode) {
+    if (!this.cache) {
+      return this._getMovieTorrents(imdbId, season, episode)
+    }
+
+    let cacheKey = `show:${imdbId}:${season}:${episode}`
+    let cacheOptions = {
+      ttl: (res) => {
+        return res.length ? CACHE_TTLS.getShowTorrents : CACHE_TTLS.NO_RESULTS
+      },
+    }
+    let method = this._getShowTorrents.bind(this, imdbId, season, episode)
+    return this.cache.wrap(cacheKey, method, cacheOptions)
   }
 }
 

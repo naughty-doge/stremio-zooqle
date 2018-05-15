@@ -15,7 +15,7 @@ const CACHE_TTLS = {
 
 
 class ZooqleClient {
-  constructor({ userName, password, userAgent, cache } = {}) {
+  constructor({ userName, password, userAgent, cache, proxy } = {}) {
     if (!userName || !password) {
       throw new Error('Username and password are required')
     }
@@ -31,6 +31,10 @@ class ZooqleClient {
         store: redisStore,
         url: cache,
       })
+    }
+
+    if (proxy) {
+      this._proxy = proxy
     }
   }
 
@@ -84,6 +88,7 @@ class ZooqleClient {
         ...headers,
       },
       cookies: this._cookies,
+      proxy: this._proxy,
     }
     let res = await needle(method, url, data, options)
 

@@ -8,6 +8,11 @@
     "dev": "cross-env NODE_ENV=development node --inspect dist/index.js",
     "prod": "cross-env NODE_ENV=production node dist/index.js",
     "build": "del-cli dist/** && babel src -d dist --source-maps",
+    "docker-start": "cross-env-shell STREMIO_ZOOQLE_PORT?=80 docker run --rm -p $STREMIO_ZOOQLE_PORT:$STREMIO_ZOOQLE_PORT -e NODE_ENV -e STREMIO_ZOOQLE_ID -e STREMIO_ZOOQLE_ENDPOINT -e STREMIO_ZOOQLE_PORT -e STREMIO_ZOOQLE_EMAIL -e STREMIO_ZOOQLE_CACHE -e STREMIO_ZOOQLE_PROXY -e STREMIO_ZOOQLE_USERNAME -e STREMIO_ZOOQLE_PASSWORD --name=stremio-zooqle stremio-zooqle",
+    "docker-dev": "cross-env-shell NODE_ENV=development STREMIO_ZOOQLE_PORT?=80 docker run --rm -p $STREMIO_ZOOQLE_PORT:$STREMIO_ZOOQLE_PORT -e NODE_ENV -e STREMIO_ZOOQLE_ID -e STREMIO_ZOOQLE_ENDPOINT -e STREMIO_ZOOQLE_PORT -e STREMIO_ZOOQLE_EMAIL -e STREMIO_ZOOQLE_CACHE -e STREMIO_ZOOQLE_PROXY -e STREMIO_ZOOQLE_USERNAME -e STREMIO_ZOOQLE_PASSWORD --name=stremio-zooqle stremio-zooqle",
+    "docker-prod": "cross-env-shell NODE_ENV=production STREMIO_ZOOQLE_PORT?=80 docker run --rm -p $STREMIO_ZOOQLE_PORT:$STREMIO_ZOOQLE_PORT -e NODE_ENV -e STREMIO_ZOOQLE_ID -e STREMIO_ZOOQLE_ENDPOINT -e STREMIO_ZOOQLE_PORT -e STREMIO_ZOOQLE_EMAIL -e STREMIO_ZOOQLE_CACHE -e STREMIO_ZOOQLE_PROXY -e STREMIO_ZOOQLE_USERNAME -e STREMIO_ZOOQLE_PASSWORD --name=stremio-zooqle stremio-zooqle",
+    "docker-stop": "docker stop stremio-zooqle",
+    "docker-build": "docker build -t stremio-zooqle .",
     "test": "jest",
     "precommit": "lint-staged"
   },

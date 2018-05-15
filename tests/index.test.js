@@ -103,7 +103,9 @@ describe('Addon', () => {
   test('The static files are accessible', async () => {
     await addon.start()
     let staticFiles = [
+      'logo.png',
       'logo-white.png',
+      'screenshot_movie.jpg',
     ]
     let promises = staticFiles.map((file) => {
       return new Promise((resolve) => {

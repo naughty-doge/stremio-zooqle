@@ -106,6 +106,7 @@ describe('Addon', () => {
       'logo.png',
       'logo-white.png',
       'screenshot_movie.jpg',
+      'bg.jpg',
     ]
     let promises = staticFiles.map((file) => {
       return new Promise((resolve) => {

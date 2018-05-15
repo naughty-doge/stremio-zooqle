@@ -93,9 +93,7 @@ class ZooqleClient {
     let res = await needle(method, url, data, options)
 
     if (res.statusCode > 399) {
-      let err = new Error(`Error ${res.statusCode} when requesting ${url}`)
-      err.res = res
-      throw err
+      throw new Error(`Error ${res.statusCode} when requesting ${url}`)
     }
 
     if (res.cookies) {
@@ -121,9 +119,7 @@ class ZooqleClient {
     let res = await this._request(url, 'post', headers, data)
 
     if (!res.cookies || !res.cookies.zqt) {
-      let err = new Error('Unable to authenticate')
-      err.res = res
-      throw err
+      throw new Error('Unable to authenticate')
     }
   }
 

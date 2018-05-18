@@ -59,6 +59,11 @@ const MANIFEST = {
   logo: `${ENDPOINT}/logo-white.png`,
   icon: `${ENDPOINT}/logo-white.png`,
   background: `${ENDPOINT}/bg.jpg`,
+  // OBSOLETE: used in pre-4.0 stremio instead of idProperty/types
+  filter: {
+    [`query.${ID_PROPERTY}`]: { $exists: true },
+    'query.type': { $in: ['movie', 'series'] },
+  },
 }
 
 

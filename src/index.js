@@ -12,13 +12,12 @@ const USER_AGENT = 'stremio-zooqle'
 const DEFAULT_ID = 'stremio_zooqle'
 const ID_PROPERTY = 'imdb_id'
 
-
 const ID = process.env.STREMIO_ZOOQLE_ID || DEFAULT_ID
 const ENDPOINT = process.env.STREMIO_ZOOQLE_ENDPOINT || 'http://localhost'
-const PORT = process.env.STREMIO_ZOOQLE_PORT || '80'
-const PROXY = process.env.STREMIO_ZOOQLE_PROXY
-const CACHE = process.env.STREMIO_ZOOQLE_CACHE || '1'
-const EMAIL = process.env.STREMIO_ZOOQLE_EMAIL
+const PORT = process.env.STREMIO_ZOOQLE_PORT || process.env.PORT || '80'
+const PROXY = process.env.STREMIO_ZOOQLE_PROXY || process.env.HTTPS_PROXY
+const CACHE = process.env.STREMIO_ZOOQLE_CACHE || process.env.REDIS_URL || '1'
+const EMAIL = process.env.STREMIO_ZOOQLE_EMAIL || process.env.EMAIL
 const USERNAME = process.env.STREMIO_ZOOQLE_USERNAME
 const PASSWORD = process.env.STREMIO_ZOOQLE_PASSWORD
 const IS_PROD = process.env.NODE_ENV === 'production'
@@ -135,7 +134,7 @@ server
 
     // eslint-disable-next-line no-console
     console.log(`
-    ${MANIFEST.name} Addon is live
+    ${MANIFEST.name} Addon is listening on port ${PORT}
 
     Endpoint:    ${values.endpoint}
     Addon Id:    ${values.id}

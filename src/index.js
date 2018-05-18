@@ -30,7 +30,7 @@ if (!USERNAME || !PASSWORD) {
   // eslint-disable-next-line no-console
   console.error(
     chalk.red(
-      '\nZooqle username and password must be speicified\n'
+      '\nZooqle username and password must be specified\n'
     )
   )
   process.exit(1)

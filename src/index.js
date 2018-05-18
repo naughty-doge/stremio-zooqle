@@ -53,6 +53,7 @@ const MANIFEST = {
   types: ['movie', 'series'],
   idProperty: ID_PROPERTY,
   dontAnnounce: !IS_PROD,
+  // The docs mention `contactEmail`, but the template uses `email`
   email: EMAIL,
   contactEmail: EMAIL,
   endpoint: ENDPOINT,

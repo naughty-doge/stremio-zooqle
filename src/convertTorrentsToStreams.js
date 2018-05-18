@@ -16,6 +16,7 @@ function makeDetailsString(prefix, ...args) {
 function isEligibleTorrent(torrent, torrentsByCategory) {
   let { category, seeders = 0, languages = [] } = torrent
 
+  // When languages are specified and there is no English, ignore the torrent
   if (seeders < MIN_SEEDERS || (
     languages.length && !languages.includes('EN')
   )) {
@@ -37,7 +38,7 @@ function torrentToStream(torrent) {
   let tag = resolution ? [resolution] : undefined
   let title = [videoDetails, audioDetails, seedersDetails]
     .filter((v) => v)
-    .join(', ')
+    .join(', ') // The Stremio app seems to replace commas with line breaks
   let availability = 0
 
   if (seeders >= 50) {

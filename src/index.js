@@ -2,18 +2,16 @@ import http from 'http'
 import Stremio from 'stremio-addons'
 import serveStatic from 'serve-static'
 import chalk from 'chalk'
-import magnet from 'magnet-uri'
-import parseTorrentName from 'torrent-name-parser'
 import pkg from '../package.json'
 import ZooqleClient from './ZooqleClient'
+import convertTorrentsToStreams from './convertTorrentsToStreams'
 
 
 const STATIC_DIR = 'static'
 const USER_AGENT = 'stremio-zooqle'
 const DEFAULT_ID = 'stremio_zooqle'
 const ID_PROPERTY = 'imdb_id'
-const MIN_SEEDERS = 0
-const STREAMS_PER_CATEGORY = 2
+
 
 const ID = process.env.STREMIO_ZOOQLE_ID || DEFAULT_ID
 const ENDPOINT = process.env.STREMIO_ZOOQLE_ENDPOINT || 'http://localhost'
@@ -64,51 +62,6 @@ const MANIFEST = {
 }
 
 
-function makeDetailsString(prefix, ...args) {
-  let string = args
-    .filter((arg, i) => arg && args.indexOf(arg) === i)
-    .join(' ')
-  return string ? `${prefix} ${string}` : undefined
-}
-
-function isEligibleTorrent(torrent, torrentsByCategory) {
-  let { category, seeders = 0, languages = [] } = torrent
-
-  if (seeders < MIN_SEEDERS || (
-    languages.length && !languages.includes('EN')
-  )) {
-    return false
-  }
-
-  torrentsByCategory[category] = torrentsByCategory[category] || 0
-  torrentsByCategory[category]++
-  return torrentsByCategory[category] <= STREAMS_PER_CATEGORY
-}
-
-function torrentToStream(torrent) {
-  let { magnetLink, category, seeders, audio, languages = [] } = torrent
-  let { infoHash, name } = magnet.decode(magnetLink)
-  let { resolution, quality } = parseTorrentName(name)
-  let videoDetails = makeDetailsString('📺', category, resolution, quality)
-  let audioDetails = makeDetailsString('🔉', audio, ...languages)
-  let seedersDetails = makeDetailsString('👤', seeders)
-  let tag = resolution ? [resolution] : undefined
-  let title = [videoDetails, audioDetails, seedersDetails]
-    .filter((v) => v)
-    .join(', ')
-  let availability = 0
-
-  if (seeders >= 50) {
-    availability = 3
-  } else if (seeders >= 20) {
-    availability = 2
-  } else if (seeders) {
-    availability = 1
-  }
-
-  return { tag, availability, title, infoHash }
-}
-
 async function findStreams(client, req) {
   let imdbId = req.query && req.query.imdb_id
 
@@ -117,7 +70,6 @@ async function findStreams(client, req) {
   }
 
   let { type, season, episode } = req.query
-  let torrentsByCategory = {}
   let torrents
 
   if (type === 'movie') {
@@ -126,10 +78,9 @@ async function findStreams(client, req) {
     torrents = await client.getShowTorrents(imdbId, season, episode)
   }
 
-  return torrents
-    .filter((torrent) => isEligibleTorrent(torrent, torrentsByCategory))
-    .map(torrentToStream)
+  return convertTorrentsToStreams(torrents)
 }
+
 
 let client = new ZooqleClient({
   userName: USERNAME,

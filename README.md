@@ -29,11 +29,11 @@ It requires a Zooqle account to scrape magnet links from movie pages. Before sta
 
 To install and quickly start the addon, do:
 
-```
+```bash
 git clone https://github.com/naughty-doge/stremio-zooqle
 cd stremio-zooqle
-npm install
-npm start
+yarn # or `npm install`
+yarn start # or `npm start`
 ```
 
 By default the server starts on `localhost:80` in development mode and doesn't announce itself to the Stremio addon tracker. To add the addon to Stremio app, open its endpoint in the browser and click the Install button, or enter the URL in the app's Addons section.
@@ -46,20 +46,28 @@ In order for the addon to work publicly, the following environment variables mus
 Note: since this addon scrapes pages, it is recommended to run it behind a proxy and use Redis caching.
 
 
+## Development
+
+The code is written in ES7 and then transpiled with Babel. It is covered by a suite of Jest tests, and the staged files are automatically linted with ESLint. The transpiled files are included in the repository: this makes for quicker start and eases deployment to different environments such as Docker and Heroku.
+
+
 ## npm scripts
 
-Each of these scripts can be used with `npm run <script>` or `yarn <script>`:
+Each of these scripts can be used with `yarn <script>` or `npm run <script>`:
 
 - `start` launches the addon
 - `prod` sets `NODE_ENV` to `production` and launches the addon
 - `dev` sets `NODE_ENV` to `development` and launches the addon with node inspector activated
-- `build` builds the addon in the `dist` dir
+- `test` to run tests with Jest
+- `build` builds the addon in the `dist` dir (add `-w` to watch)
 
 * `docker-build` builds the Docker image
 * `docker-start` launches the addon in a `stremio-zooqle` Docker container
 * `docker-dev` sets `NODE_ENV` to `development` and launches the addon in a `stremio-zooqle` Docker container
 * `docker-prod` sets `NODE_ENV` to `production` and launches the addon in a `stremio-zooqle` Docker container
 * `docker-stop` stops the Docker container
+
+When run in Docker using these scripts, the variables from the current shell are passed to the Docker container.
 
 
 ## Configuration
@@ -76,7 +84,12 @@ To configure the addon, set the following environment variables before running i
 - `STREMIO_ZOOQLE_PROXY` — HTTPS proxy address to route all the outbound requests to (unset by default)
 - `STREMIO_ZOOQLE_CACHE` — 0 to turn caching off, 1 to cache in memory, or a Redis URL (e.g. `redis://example.com:6379`) to cache in Redis (defaults to 1)
 
-When run in Docker using the npm scripts, the variables from the current shell are passed to the Docker container.
+The addon also respects environment variables commonly used by many hosting providers (e.g. Heroku):
+
+- `PORT` — fallback for `STREMIO_ZOOQLE_PORT`
+- `EMAIL` — fallback for `STREMIO_ZOOQLE_EMAIL`
+- `HTTPS_PROXY` — fallback for `STREMIO_ZOOQLE_PROXY`
+- `REDIS_URL` — fallback for `STREMIO_ZOOQLE_CACHE`
 
 
 ## Screenshots

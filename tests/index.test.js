@@ -21,9 +21,10 @@ function reset() {
   delete process.env.STREMIO_ZOOQLE_PROXY
   delete process.env.STREMIO_ZOOQLE_CACHE
   delete process.env.STREMIO_ZOOQLE_EMAIL
-  delete process.env.STREMIO_ZOOQLE_USERNAME
-  delete process.env.STREMIO_ZOOQLE_PASSWORD
   delete process.env.NODE_ENV
+
+  process.env.STREMIO_ZOOQLE_USERNAME = 'foo'
+  process.env.STREMIO_ZOOQLE_PASSWORD = 'bar'
 }
 
 function initAddon() {

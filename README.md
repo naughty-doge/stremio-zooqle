@@ -78,7 +78,7 @@ To configure the addon, set the following environment variables before running i
 - `STREMIO_ZOOQLE_USERNAME` — Zooqle username, required (unset by default)
 - `STREMIO_ZOOQLE_PASSWORD` — Zooqle password, required (unset by default)
 - `STREMIO_ZOOQLE_ID` — addon identifier, must be non-default in production mode (defaults to `stremio_zooqle`)
-- `STREMIO_ZOOQLE_ENDPOINT` — URL to use as the endpoint, must be public in production mode (defaults to `http://localhost`)
+- `STREMIO_ZOOQLE_ENDPOINT` — base URL to use in the endpoint, must be public in production mode (defaults to `http://localhost`)
 - `STREMIO_ZOOQLE_PORT` — port to listen to (defaults to `80`)
 - `STREMIO_ZOOQLE_EMAIL` — email address that can be used to contact you (unset by default)
 - `STREMIO_ZOOQLE_PROXY` — HTTPS proxy address to route all the outbound requests to (unset by default)

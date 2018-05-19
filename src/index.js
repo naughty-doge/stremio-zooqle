@@ -55,7 +55,7 @@ const MANIFEST = {
   // The docs mention `contactEmail`, but the template uses `email`
   email: EMAIL,
   contactEmail: EMAIL,
-  endpoint: ENDPOINT,
+  endpoint: `${ENDPOINT}/stremioget/stremio/v1`,
   logo: `${ENDPOINT}/logo-white.png`,
   icon: `${ENDPOINT}/logo-white.png`,
   background: `${ENDPOINT}/bg.jpg`,
@@ -121,7 +121,7 @@ let server = http.createServer((req, res) => {
 server
   .on('listening', () => {
     let values = {
-      endpoint: chalk.green(ENDPOINT),
+      endpoint: chalk.green(MANIFEST.endpoint),
       id: ID === DEFAULT_ID ? chalk.red(ID) : chalk.green(ID),
       email: EMAIL ? chalk.green(EMAIL) : chalk.red('undefined'),
       env: IS_PROD ? chalk.green('production') : chalk.green('development'),

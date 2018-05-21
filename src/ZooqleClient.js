@@ -2,10 +2,12 @@ import needle from 'needle'
 import cheerio from 'cheerio'
 import cacheManager from 'cache-manager'
 import redisStore from 'cache-manager-redis-store'
+import Bottleneck from 'bottleneck'
 
 
 const BASE_URL = 'https://zooqle.com'
 const CACHE_PREFIX = 'stremio_zooqle|'
+const MAX_CONCURRENT_REQUESTS = 6
 const CACHE_TTLS = {
   // Item URLs aren't supposed to change, so we cache them for long
   getItemUrl: 7 * 24 * 60 * 60, // a week
@@ -24,6 +26,7 @@ class ZooqleClient {
     this._userName = userName
     this._password = password
     this._userAgent = userAgent
+    this._scheduler = new Bottleneck({ maxConcurrent: MAX_CONCURRENT_REQUESTS })
 
     if (cache === '1') {
       this.cache = cacheManager.caching({ store: 'memory' })
@@ -83,25 +86,27 @@ class ZooqleClient {
   }
 
   async _request(url, method = 'get', headers = {}, data = null) {
-    let options = {
-      headers: {
-        'user-agent': this._userAgent,
-        ...headers,
-      },
-      cookies: this._cookies,
-      proxy: this._proxy,
-    }
-    let res = await needle(method, url, data, options)
+    return this._scheduler.schedule(async () => {
+      let options = {
+        headers: {
+          'user-agent': this._userAgent,
+          ...headers,
+        },
+        cookies: this._cookies,
+        proxy: this._proxy,
+      }
+      let res = await needle(method, url, data, options)
 
-    if (res.statusCode > 399) {
-      throw new Error(`Error ${res.statusCode} when requesting ${url}`)
-    }
+      if (res.statusCode > 399) {
+        throw new Error(`Error ${res.statusCode} when requesting ${url}`)
+      }
 
-    if (res.cookies) {
-      this._cookies = { ...this.cookies, ...res.cookies }
-    }
+      if (res.cookies) {
+        this._cookies = { ...this.cookies, ...res.cookies }
+      }
 
-    return res
+      return res
+    })
   }
 
   async _authenticate() {

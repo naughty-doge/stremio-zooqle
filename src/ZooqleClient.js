@@ -29,9 +29,9 @@ class ZooqleClient {
     this._scheduler = new Bottleneck({ maxConcurrent: MAX_CONCURRENT_REQUESTS })
 
     if (cache === '1') {
-      this.cache = cacheManager.caching({ store: 'memory' })
+      this._cache = cacheManager.caching({ store: 'memory' })
     } else if (cache && cache !== '0') {
-      this.cache = cacheManager.caching({
+      this._cache = cacheManager.caching({
         store: redisStore,
         url: cache,
       })
@@ -185,7 +185,7 @@ class ZooqleClient {
   }
 
   async getItemUrl(imdbId) {
-    if (!this.cache) {
+    if (!this._cache) {
       return this._getItemUrl(imdbId)
     }
 
@@ -194,11 +194,11 @@ class ZooqleClient {
       ttl: CACHE_TTLS.getItemUrl,
     }
     let method = this._getItemUrl.bind(this, imdbId)
-    return this.cache.wrap(cacheKey, method, cacheOptions)
+    return this._cache.wrap(cacheKey, method, cacheOptions)
   }
 
   async getMovieTorrents(imdbId) {
-    if (!this.cache) {
+    if (!this._cache) {
       return this._getMovieTorrents(imdbId)
     }
 
@@ -209,11 +209,11 @@ class ZooqleClient {
       },
     }
     let method = this._getMovieTorrents.bind(this, imdbId)
-    return this.cache.wrap(cacheKey, method, cacheOptions)
+    return this._cache.wrap(cacheKey, method, cacheOptions)
   }
 
   async getShowTorrents(imdbId, season, episode) {
-    if (!this.cache) {
+    if (!this._cache) {
       return this._getMovieTorrents(imdbId, season, episode)
     }
 
@@ -224,7 +224,7 @@ class ZooqleClient {
       },
     }
     let method = this._getShowTorrents.bind(this, imdbId, season, episode)
-    return this.cache.wrap(cacheKey, method, cacheOptions)
+    return this._cache.wrap(cacheKey, method, cacheOptions)
   }
 }
 

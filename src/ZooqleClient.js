@@ -5,6 +5,7 @@ import redisStore from 'cache-manager-redis-store'
 
 
 const BASE_URL = 'https://zooqle.com'
+const CACHE_PREFIX = 'stremio_zooqle|'
 const CACHE_TTLS = {
   // Item URLs aren't supposed to change, so we cache them for long
   getItemUrl: 7 * 24 * 60 * 60, // a week
@@ -183,7 +184,7 @@ class ZooqleClient {
       return this._getItemUrl(imdbId)
     }
 
-    let cacheKey = `itemUrl:${imdbId}`
+    let cacheKey = `${CACHE_PREFIX}itemUrl:${imdbId}`
     let cacheOptions = {
       ttl: CACHE_TTLS.getItemUrl,
     }
@@ -196,7 +197,7 @@ class ZooqleClient {
       return this._getMovieTorrents(imdbId)
     }
 
-    let cacheKey = `movie:${imdbId}`
+    let cacheKey = `${CACHE_PREFIX}movie:${imdbId}`
     let cacheOptions = {
       ttl: (res) => {
         return res.length ? CACHE_TTLS.getMovieTorrents : CACHE_TTLS.NO_RESULTS
@@ -211,7 +212,7 @@ class ZooqleClient {
       return this._getMovieTorrents(imdbId, season, episode)
     }
 
-    let cacheKey = `show:${imdbId}:${season}:${episode}`
+    let cacheKey = `${CACHE_PREFIX}show:${imdbId}:${season}:${episode}`
     let cacheOptions = {
       ttl: (res) => {
         return res.length ? CACHE_TTLS.getShowTorrents : CACHE_TTLS.NO_RESULTS

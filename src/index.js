@@ -101,7 +101,9 @@ let methods = {
       (err) => {
         /* eslint-disable no-console */
         console.error(
-          'An error has occurred while processing the following request:'
+          // eslint-disable-next-line prefer-template
+          chalk.gray(new Date().toLocaleString()) +
+          ' An error has occurred while processing the following request:'
         )
         console.error(req)
         console.error(err)

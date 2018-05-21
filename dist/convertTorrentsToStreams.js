@@ -1,41 +1,38 @@
-'use strict'
+"use strict";
 
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-})
-exports.default = void 0
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
-let _magnetUri = _interopRequireDefault(require('magnet-uri'))
+var _magnetUri = _interopRequireDefault(require("magnet-uri"));
 
-let _torrentNameParser = _interopRequireDefault(require('torrent-name-parser'))
+var _torrentNameParser = _interopRequireDefault(require("torrent-name-parser"));
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj }
-}
-
-const MIN_SEEDERS = 0
-const STREAMS_PER_CATEGORY = 2
+const MIN_SEEDERS = 0;
+const STREAMS_PER_CATEGORY = 2;
 
 function makeDetailsString(prefix, ...args) {
-  let string = args.filter((arg, i) => arg && args.indexOf(arg) === i).join(' ')
-  return string ? `${prefix} ${string}` : undefined
+  let string = args.filter((arg, i) => arg && args.indexOf(arg) === i).join(' ');
+  return string ? `${prefix} ${string}` : undefined;
 }
 
 function isEligibleTorrent(torrent, torrentsByCategory) {
   let {
     category,
     seeders = 0,
-    languages = [],
-  } = torrent // When languages are specified and there is no English, ignore the torrent
+    languages = []
+  } = torrent; // When languages are specified and there is no English, ignore the torrent
 
   if (seeders < MIN_SEEDERS || languages.length && !languages.includes('EN')) {
-    return false
+    return false;
   }
 
-  torrentsByCategory[category] = torrentsByCategory[category] || 0
-  torrentsByCategory[category]++
-  return torrentsByCategory[category] <= STREAMS_PER_CATEGORY
+  torrentsByCategory[category] = torrentsByCategory[category] || 0;
+  torrentsByCategory[category]++;
+  return torrentsByCategory[category] <= STREAMS_PER_CATEGORY;
 }
 
 function torrentToStream(torrent) {
@@ -44,47 +41,47 @@ function torrentToStream(torrent) {
     category,
     seeders,
     audio,
-    languages = [],
-  } = torrent
+    languages = []
+  } = torrent;
 
   let {
     infoHash,
-    name,
-  } = _magnetUri.default.decode(magnetLink)
+    name
+  } = _magnetUri.default.decode(magnetLink);
 
   let {
     resolution,
-    quality,
-  } = (0, _torrentNameParser.default)(name)
-  let videoDetails = makeDetailsString('📺', category, resolution, quality)
-  let audioDetails = makeDetailsString('🔉', audio, ...languages)
-  let seedersDetails = makeDetailsString('👤', seeders)
-  let tag = resolution ? [resolution] : undefined
-  let title = [videoDetails, audioDetails, seedersDetails].filter((v) => v).join(', ') // The Stremio app seems to replace commas with line breaks
+    quality
+  } = (0, _torrentNameParser.default)(name);
+  let videoDetails = makeDetailsString('📺', category, resolution, quality);
+  let audioDetails = makeDetailsString('🔉', audio, ...languages);
+  let seedersDetails = makeDetailsString('👤', seeders);
+  let tag = resolution ? [resolution] : undefined;
+  let title = [videoDetails, audioDetails, seedersDetails].filter(v => v).join(', '); // The Stremio app seems to replace commas with line breaks
 
-  let availability = 0
+  let availability = 0;
 
   if (seeders >= 50) {
-    availability = 3
+    availability = 3;
   } else if (seeders >= 20) {
-    availability = 2
+    availability = 2;
   } else if (seeders) {
-    availability = 1
+    availability = 1;
   }
 
   return {
     tag,
     availability,
     title,
-    infoHash,
-  }
+    infoHash
+  };
 }
 
 function convertTorrentsToStreams(torrents) {
-  let torrentsByCategory = {}
-  return torrents.filter((torrent) => isEligibleTorrent(torrent, torrentsByCategory)).map(torrentToStream)
+  let torrentsByCategory = {};
+  return torrents.filter(torrent => isEligibleTorrent(torrent, torrentsByCategory)).map(torrentToStream);
 }
 
-let _default = convertTorrentsToStreams
-exports.default = _default
-// # sourceMappingURL=convertTorrentsToStreams.js.map
+var _default = convertTorrentsToStreams;
+exports.default = _default;
+//# sourceMappingURL=convertTorrentsToStreams.js.map

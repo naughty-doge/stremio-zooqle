@@ -5,7 +5,7 @@
 </div>
 <h1 align="center" style="border: 0">Zooqle Addon for Stremio</h1>
 
-This is a [Stremio](https://www.stremio.com/) addon that provides movies and series indexed by [Zooqle](https://zooqle.com/) from various torrent trackers (RARBG, KAT, YTS, MegaTorrents and many others).
+This is a [Stremio](https://www.stremio.com/) addon that provides movies and series indexed by [Zooqle](https://zooqle.com/) from RARBG, KAT, YTS, MegaTorrents and other torrent trackers.
 
 
 ## Features
@@ -16,6 +16,7 @@ This is a [Stremio](https://www.stremio.com/) addon that provides movies and ser
 - Works in Stremio v4 and v3.6
 - Supports Docker out of the box
 - Caches results in memory or Redis
+- Limits the number of concurrent requests to avoid overloading the API
 - Supports HTTPS proxy
 - Configurable via environment variables
 - Prints a nicely formatted status message when run
@@ -25,7 +26,7 @@ This is a [Stremio](https://www.stremio.com/) addon that provides movies and ser
 
 The addon is a web server that fetches torrent files from Zooqle, which indexes them from various trackers. It uses environment variables for configuration and includes a handful of npm scripts to run with or without Docker.
 
-It requires a Zooqle account to scrape magnet links from movie pages. Before starting the addon, register on [Zooqle](https://zooqle.com) and then set the `STREMIO_ZOOQLE_USERNAME` and `STREMIO_ZOOQLE_PASSWORD` environment variables to the corresponding values.
+__IMPORTANT:__ it requires a Zooqle account to scrape magnet links from movie pages. Before starting the addon, register on [Zooqle](https://zooqle.com) and then set the `STREMIO_ZOOQLE_USERNAME` and `STREMIO_ZOOQLE_PASSWORD` environment variables to the corresponding values.
 
 To install and quickly start the addon, do:
 

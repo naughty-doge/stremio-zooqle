@@ -48,7 +48,9 @@ const MANIFEST = {
   name: 'Zooqle',
   id: ID,
   version: pkg.version,
-  description: 'Watch movies and series indexed by Zooqle from various torrent trackers',
+  description: '\
+Watch movies and series indexed by Zooqle from RARBG, KAT, YTS, MegaTorrents and other torrent trackers\
+',
   types: ['movie', 'series'],
   idProperty: ID_PROPERTY,
   dontAnnounce: !IS_PROD,
